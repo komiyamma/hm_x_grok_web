@@ -88,7 +88,7 @@ function oneAIWindowCloseCheck() {
         // クローズタイマーは無意味になってるので終了
         hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
 
-        // 自武のウィンドウなら、
+        // 個別ブラウザ枠が、このXGrokだと思われるならば、
         let url = browserpanecommand({
             "target": "_each",
             "get": "url",
@@ -96,7 +96,10 @@ function oneAIWindowCloseCheck() {
 
         // 個別ブラウザ枠がgrok.comならば、閉じる(万全ではないが、まぁ仕方がないだろう)
         if (url.includes("https://grok.com")) {
-            browserpanecommand({ target: "_each", show: 0 });
+            browserpanecommand({
+                target: "_each",
+                show: 0
+            });
         }
         return;
     }
