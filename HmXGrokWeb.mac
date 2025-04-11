@@ -6,7 +6,9 @@
  */
 
 
-jsmode "WebView2\\HmXGrokWeb";
+hidemaruversion "9.35.99";
+
+jsmode @"WebView2\HmXGrokWeb";
 
 js {
 
@@ -29,8 +31,8 @@ const currentMacroDirectory = currentmacrodirectory();
 
 
 
-var timeHandleOfWindowCloseCheck = 0;
-if (timeHandleOfWindowCloseCheck) {
+var timeHandleOfWindowCloseCheck;
+if (typeof(timeHandleOfWindowCloseCheck) != "undefined") {
     hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
 }
 
@@ -101,6 +103,7 @@ function outputAlert(msg) {
 // 質問内容のテキスト
 function getQuestionText() {
     let text = getselectedtext();
+    return text;
 }
 
 // ブラウザウィンドウオープン
