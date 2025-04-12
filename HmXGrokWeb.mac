@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.0.0.3
+ * HmXGrokWeb v 1.0.0.4
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -25,12 +25,10 @@ const isOneAtTimeAIRenderPane = 1; // AI関連のレンダリング枠は(他の
 
 const renderPaneTargetName = "HmXGrokWeb";
 
-const hidemaruExeDir = hidemarudir();
-
 const currentMacroDirectory = currentmacrodirectory();
 
 
-
+// 前回分が実行されずに溜まっていたら除去
 var timeHandleOfWindowCloseCheck;
 if (typeof(timeHandleOfWindowCloseCheck) != "undefined") {
     hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
@@ -38,10 +36,12 @@ if (typeof(timeHandleOfWindowCloseCheck) != "undefined") {
 
 // AIウィンドウを１つだけに絞る処理(他のAIシリーズがレンダリングペイン実装なので無理やり辻褄をあわせている)
 function oneAIWindowFrameCheck() {
+
+    if (!isOneAtTimeAIRenderPane) {
+        return;
+    }
+
     try {
-        if (!isOneAtTimeAIRenderPane) {
-            return;
-        }
 
         let lastAiRenderPaneTargetName = getstaticvariable("OneAtTimeAIRenderPane", 2);
 
@@ -69,10 +69,12 @@ function oneAIWindowFrameCheck() {
 
 // AIウィンドウを１つだけに絞る処理情報の上書き
 function oneAIWindowFrameUpdate() {
-    // １つのウィンドウに絞るフラグがONなら、登録しておく
-    if (isOneAtTimeAIRenderPane) {
-        setstaticvariable("OneAtTimeAIRenderPane", renderPaneTargetName, 2);
+
+    if (!isOneAtTimeAIRenderPane) {
+        return;
     }
+
+    setstaticvariable("OneAtTimeAIRenderPane", renderPaneTargetName, 2);
 }
 
 
@@ -108,7 +110,7 @@ function oneAIWindowCloseCheck() {
     timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
 }
 
-
+// アウトプット枠に文字列を出力
 function outputAlert(msg) {
     let dll = loaddll("HmOutputPane.dll");
     dll.dllfuncW.OutputW(hidemaru.getCurrentWindowHandle(), msg + "\r\n");
@@ -139,20 +141,24 @@ function doMain() {
 
     // 質問内容のテキスト
     let text = getQuestionText();
+    if (!text) { return; }
 
-    if (text) {
+    // AIウィンドウフレームに絞るかどうか
+    oneAIWindowFrameCheck();
 
-        // AIウィンドウフレームに絞るかどうか
-        oneAIWindowFrameCheck();
+    // ブラウザウィンドウ開く
+    openRenderPaneCommand(text);
 
-        // ブラウザウィンドウ開く
-        openRenderPaneCommand(text);
-
-        // AIウィンドウフレーム情報更新
-        oneAIWindowFrameUpdate();
-    }
+    // AIウィンドウフレーム情報更新
+    oneAIWindowFrameUpdate();
 }
 
-hidemaru.setTimeout(doMain, 0);
-
+// 前回分が実行されずに溜まっていたら除去
+var timeHandleOfDoMain;
+if (typeof(timeHandleOfDoMain) != "undefined") {
+    hidemaru.clearTimeout(timeHandleOfDoMain);
 }
+
+timeHandleOfDoMain = hidemaru.setTimeout(doMain, 0);
+
+} // js
