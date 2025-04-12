@@ -1,6 +1,6 @@
 # HmXGrokWeb
 
-![HmXGrokWeb v1.0.0](https://img.shields.io/badge/HmHmXGrokWeb-v1.0.0-6479ff.svg)
+![HmXGrokWeb v1.1.0](https://img.shields.io/badge/HmHmXGrokWeb-v1.1.0-6479ff.svg)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 ![Hidemaru 9.35](https://img.shields.io/badge/Hidemaru-v9.35-6479ff.svg)
 

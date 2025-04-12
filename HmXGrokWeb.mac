@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.0.0.6
+ * HmXGrokWeb v 1.1.0.1
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -120,11 +120,16 @@ function outputAlert(msg) {
 
 // 質問内容のテキスト
 function getQuestionText() {
-    let text = getselectedtext();
-    return text;
+
+    // 外部からカスタムで定義されている。
+    if (typeof(onRequestQuestionText) == "function") {
+        return onRequestQuestionText();
+    }
+
+    return getselectedtext();
 }
 
-
+// urlの構築
 function makeUrl(baseUrl, text) {
     const absoluteUrl = new URL(baseUrl);
     const params = new URLSearchParams({ q: text });
@@ -149,13 +154,27 @@ function openRenderPaneCommand(text) {
 
     browserpanecommand(browserPaneMixParam);
 }
+
+// 前回分が実行されずに溜まっていたら除去
+var timeHandleOfDoMain;
+if (typeof(timeHandleOfDoMain) != "undefined") {
+    hidemaru.clearTimeout(timeHandleOfDoMain);
+}
+
 // メイン処理
 function doMain() {
 
-    // 質問内容のテキスト
+    // 質問内容のテキスト。外部マクロからquestion内容を上書きしやすいようにするため、ここだけ同期
     let text = getQuestionText();
-    if (!text) { return; }
+    if (!text) {
+        return;
+    }
 
+    timeHandleOfDoMain = hidemaru.setTimeout(doAsyncAction, 0, text);
+}
+
+// 秀丸の同期スレッドに負荷をかけないため、非同期に逃がす
+function doAsyncAction(text) {
     // AIウィンドウフレームに絞るかどうか
     oneAIWindowFrameCheck();
 
@@ -166,12 +185,6 @@ function doMain() {
     oneAIWindowFrameUpdate();
 }
 
-// 前回分が実行されずに溜まっていたら除去
-var timeHandleOfDoMain;
-if (typeof(timeHandleOfDoMain) != "undefined") {
-    hidemaru.clearTimeout(timeHandleOfDoMain);
-}
-
-timeHandleOfDoMain = hidemaru.setTimeout(doMain, 0);
+doMain();
 
 } // js
