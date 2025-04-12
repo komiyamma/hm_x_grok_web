@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.0.0.5
+ * HmXGrokWeb v 1.0.0.6
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -124,11 +124,11 @@ function getQuestionText() {
     return text;
 }
 
+
 function makeUrl(baseUrl, text) {
-    var absoluteUrl = new URL(baseUrl);
-    var params = new URLSearchParams();
-    params.set("q", text);
-    absoluteUrl.search = new URLSearchParams(params).toString();
+    const absoluteUrl = new URL(baseUrl);
+    const params = new URLSearchParams({ q: text });
+    absoluteUrl.search = params.toString();
     return absoluteUrl.href;
 }
 
