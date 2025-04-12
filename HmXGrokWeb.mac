@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.0.0.4
+ * HmXGrokWeb v 1.0.0.5
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -13,6 +13,8 @@ jsmode @"WebView2\HmXGrokWeb";
 js {
 
 // ------------- 会話エンジンの設定項目 -------------
+
+const baseUrl = "https://grok.com/";
 
 const renderPaneCustomParam = {
     place: "rightside",            // leftside | rightside | upside | downside
@@ -97,7 +99,7 @@ function oneAIWindowCloseCheck() {
         });
 
         // 個別ブラウザ枠がgrok.comならば、閉じる(万全ではないが、まぁ仕方がないだろう)
-        if (url.includes("https://grok.com")) {
+        if (url.includes(baseUrl)) {
             browserpanecommand({
                 target: "_each",
                 show: 0
@@ -122,11 +124,22 @@ function getQuestionText() {
     return text;
 }
 
+function makeUrl(baseUrl, text) {
+    var absoluteUrl = new URL(baseUrl);
+    var params = new URLSearchParams();
+    params.set("q", text);
+    absoluteUrl.search = new URLSearchParams(params).toString();
+    return absoluteUrl.href;
+}
+
 // ブラウザウィンドウオープン
 function openRenderPaneCommand(text) {
+
+    const url = makeUrl(baseUrl, text);
+
     let renderPaneOriginalParam = {
         target: "_each",
-        url: "https://grok.com/?q=" + encodeURI(text),
+        url: url,
         initialize: "async",
         show: 1,
         size: 450,
