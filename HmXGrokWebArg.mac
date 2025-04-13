@@ -1,0 +1,13 @@
+﻿jsmode @"WebView2\HmXGrokWeb";
+
+js {
+
+var _myQuestionTextCache = getarg(0);
+
+function onRequestQuestionText() {
+    return _myQuestionTextCache;
+}
+
+hidemaru.postExecMacroFile( currentmacrodirectory() + "\\HmXGrokWeb.mac" );
+
+} // js
