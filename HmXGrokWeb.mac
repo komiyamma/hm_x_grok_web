@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.0.1
+ * HmXGrokWeb v 1.1.0.2
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -61,8 +61,6 @@ function oneAIWindowFrameCheck() {
 
             renderpanecommand(param);
         }
-
-        timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 500);
     } catch (err) {
         outputAlert(err);
     }
@@ -77,6 +75,8 @@ function oneAIWindowFrameUpdate() {
     }
 
     setstaticvariable("OneAtTimeAIRenderPane", renderPaneTargetName, 2);
+
+    timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
 }
 
 
@@ -87,29 +87,30 @@ function oneAIWindowCloseCheck() {
 
     // 他のAIシリーズのウィンドウが開かれていたら、
     let lastAiRenderPaneTargetName = getstaticvariable("OneAtTimeAIRenderPane", 2);
-    if (lastAiRenderPaneTargetName != renderPaneTargetName) {
 
-        // クローズタイマーは無意味になってるので終了
-        hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
-
-        // 個別ブラウザ枠が、このXGrokだと思われるならば、
-        let url = browserpanecommand({
-            "target": "_each",
-            "get": "url",
-        });
-
-        // 個別ブラウザ枠がgrok.comならば、閉じる(万全ではないが、まぁ仕方がないだろう)
-        if (url.includes(baseUrl)) {
-            browserpanecommand({
-                target: "_each",
-                show: 0
-            });
-        }
+    // 同じということは状況が継続している。
+    if (lastAiRenderPaneTargetName == renderPaneTargetName) {
+        timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
         return;
     }
 
-    // 自分自身でGrokウィンドウを終了するかチェック継続
-    timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
+    // クローズタイマーは無意味になってるので終了
+    hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
+
+    // 個別ブラウザ枠が、このXGrokだと思われるならば、
+    let url = browserpanecommand({
+        "target": "_each",
+        "get": "url",
+    });
+
+    // 個別ブラウザ枠がgrok.comならば、閉じる(万全ではないが、まぁ仕方がないだろう)
+    if (url.includes(baseUrl)) {
+        browserpanecommand({
+            target: "_each",
+            show: 0
+        });
+    }
+
 }
 
 // アウトプット枠に文字列を出力
