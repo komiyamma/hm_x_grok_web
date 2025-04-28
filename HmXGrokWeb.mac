@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.0.2
+ * HmXGrokWeb v 1.1.0.3
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -102,6 +102,11 @@ function oneAIWindowCloseCheck() {
         "target": "_each",
         "get": "url",
     });
+
+    // 新たなAIがWebならなにもしない。同じ個別ブラウザで開かれるだろうから
+    if (lastAiRenderPaneTargetName.endsWith("Web")) {
+        return;
+    }
 
     // 個別ブラウザ枠がgrok.comならば、閉じる(万全ではないが、まぁ仕方がないだろう)
     if (url.includes(baseUrl)) {
