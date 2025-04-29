@@ -87,6 +87,44 @@ function oneAIWindowCloseCheck() {
 
 }
 
+// ブラウザウィンドウオープン
+function openRenderPaneCommand(text) {
+
+    try {
+        // 個別ブラウザ枠が、このAIのウィンドウだと思われるならば、
+        let url = browserpanecommand({
+            "target": "_each",
+            "get": "url",
+        });
+
+        // 開かれていない時だけ...
+        if (!url.includes(baseUrl)) {
+            
+            let url = baseUrl;
+            if (typeof(makeRenderPaneUrl) == "function") {
+                url = makeRenderPaneUrl(baseUrl, text);
+            }
+            
+            let renderPaneOriginalParam = {
+                url: url,
+                target: "_each",
+                initialize: "async",
+                show: 1
+            };
+            
+            const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
+            
+            browserpanecommand(browserPaneMixParam);
+        }
+        
+        hidemaru.setTimeout(waitBrowserPane, 0, text);
+        
+    } catch(err) {
+        outputAlert(err);
+    }
+}
+
+
 function waitBrowserPane(text) {
     const status = browserpanecommand({
         target: "_each",

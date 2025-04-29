@@ -35,45 +35,13 @@ const script = hidemaru.loadTextFile(currentMacroDirectory + "\\HmConvAIWeb.js")
 eval(script);
 
 // urlの構築
-function makeUrl(baseUrl, text) {
+function makeRenderPaneUrl(baseUrl, text) {
     const absoluteUrl = new URL(baseUrl);
     const params = new URLSearchParams({ q: text });
     absoluteUrl.search = params.toString();
     return absoluteUrl.href;
 }
 
-// ブラウザウィンドウオープン
-function openRenderPaneCommand(text) {
-
-    // 個別ブラウザ枠が、このCopilotだと思われるならば、
-    let url = browserpanecommand({
-        "target": "_each",
-        "get": "url",
-    });
-
-    // 開かれていない時だけ...
-    if (!url.includes(baseUrl)) {
-
-        const url = makeUrl(baseUrl, text);
-
-        let renderPaneOriginalParam = {
-            target: "_each",
-            url: url,
-            initialize: "async",
-            show: 1,
-            size: 450,
-        };
-
-        const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
-
-        browserpanecommand(browserPaneMixParam);
-    }
-    
-    // すでにHmXGrokWeb が開かている
-    else {
-        hidemaru.setTimeout(waitBrowserPane, 0, text);
-    }
-}
-
 doMain();
+
 } // js

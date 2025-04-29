@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,21 +44,12 @@ public partial class HmXGrokWeb
         {
             await Task.Delay(400);
             SendCtrlV();
-            // SendKeys.SendWait(text);
-
             await Task.Delay(300);
 
             // Enter を送信
             SendReturn();
-            // Enter を送信
-            await Task.Delay(300);
-            /*
-            SendReturn();
-            await Task.Delay(300);
-            */
         });
     }
-
 
     private static async void SendShiftTab()
     {
