@@ -29,8 +29,6 @@ const renderPaneTargetName = "HmXGrokWeb";
 
 const currentMacroDirectory = currentmacrodirectory();
 
-const com = createobject(`${currentMacroDirectory}\\${renderPaneTargetName}.dll`, `${renderPaneTargetName}.${renderPaneTargetName}`);
-
 const script = hidemaru.loadTextFile(currentMacroDirectory + "\\HmConvAIWeb.js");
 eval(script);
 

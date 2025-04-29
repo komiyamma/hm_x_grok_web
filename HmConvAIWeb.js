@@ -1,4 +1,15 @@
 // HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.4
+var com = createobject(`${currentMacroDirectory}\\${renderPaneTargetName}.dll`, `${renderPaneTargetName}.${renderPaneTargetName}`);
+
+// エラーメッセージ用
+function outputAlert(msg) {
+    if (msg == null) { return; }
+    if (msg == "") { return; }
+    var dll = loaddll("HmOutputPane.dll");
+    msg = msg.toString().replace(/\r\n/g, "\n").replace(/\n/g, "\r\n");
+    dll.dllFuncW.OutputW(hidemaru.getCurrentWindowHandle(), msg + "\r\n");
+}
+
 
 // 前回分が実行されずに溜まっていたら除去
 var timeHandleOfWindowCloseCheck;
@@ -152,7 +163,9 @@ function onCompleteBrowserPane(text) {
         com.PasteToBrowserPane(text);
     } catch(e) {
     } finally {
-        onCompleteBrowserPaneDecorator?.(text);
+        if (typeof(onCompleteBrowserPaneDecorator) == "function") {
+            onCompleteBrowserPaneDecorator(text);
+        }
         timeHandleOfDoMain = hidemaru.setTimeout(onBeginAIAnswer, 2000);
     }
 }
@@ -167,7 +180,9 @@ function onBeginAIAnswer() {
     setfocus(orgFocus);
     restoreClipBoard();
     
-    onEndMacroDecorator?.();
+    if (typeof(onEndMacroDecorator) == "function") {
+        onEndMacroDecorator?.();
+    }
 }
 
 
@@ -178,6 +193,7 @@ function captureClipBoard() {
 }
 
 function restoreClipBoard() {
+    
     try {
         // Windows 10 の 1809 以降にはクリップボード履歴がある
         var processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis" );
