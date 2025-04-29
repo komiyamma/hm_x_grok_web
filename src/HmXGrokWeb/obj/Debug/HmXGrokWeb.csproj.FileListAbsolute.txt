@@ -1,0 +1,8 @@
+C:\Users\master\source\repos\HmXGrokWeb\HmXGrokWeb\obj\Debug\HmXGrokWeb.csproj.AssemblyReference.cache
+C:\Users\master\source\repos\HmXGrokWeb\HmXGrokWeb\obj\Debug\HmXGrokWeb.csproj.CoreCompileInputs.cache
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\bin\Debug\HmXGrokWeb.dll
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\bin\Debug\HmXGrokWeb.pdb
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\obj\Debug\HmXGrokWeb.csproj.AssemblyReference.cache
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\obj\Debug\HmXGrokWeb.csproj.CoreCompileInputs.cache
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\obj\Debug\HmXGrokWeb.dll
+G:\repogitory\hm_x_grok_web\src\HmXGrokWeb\obj\Debug\HmXGrokWeb.pdb

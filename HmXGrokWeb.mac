@@ -169,8 +169,6 @@ function openRenderPaneCommand(text) {
         const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
 
         browserpanecommand(browserPaneMixParam);
-        restoreClipBoard();
-        
     }
     
     // すでにHmXGrokWeb が開かている
@@ -197,10 +195,12 @@ function waitBrowserPane(text) {
 
 function onCompleteBrowserPane(text) {
     try {
+        setFocusToBrowserPane();
         browserpanecommand({
             target: "_each",
             "focusinputfield" : 1,
         });
+        captureClipBoard();
         com.PasteToBrowserPane(text);
     } catch(e) {
     } finally {
@@ -224,10 +224,13 @@ function onBeginAIAnswer() {
     const browserPaneMixParam = { ...{"target": "_each"}, ...renderPaneCustomParam };
     browserpanecommand(browserPaneMixParam);
     setfocus(orgFocus);
+    restoreClipBoard();
 }
 
-function saveClipBoard() {
+debuginfo(2);
+function captureClipBoard() {
     try {
+        console.log("キャプチャー");
         com.CaptureClipboard();
     } catch(e) {}
 }
@@ -236,8 +239,11 @@ function restoreClipBoard() {
     try {
         // Windows 10 の 1809 以降にはクリップボード履歴がある
         var processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistoryManager.exe", ".", "stdio", "sjis" );
-        
-        com.RestoreClipboard();
+        processInfo.onClose = function() {
+            console.log("リストア");
+            // 普通のクリップボードの復元
+            com.RestoreClipboard();
+        }
     } catch(e) {}
 }
 
@@ -257,9 +263,6 @@ function doMain() {
         return;
     }
 
-    saveClipBoard();
-    setclipboard( text );
-    
     timeHandleOfDoMain = hidemaru.setTimeout(doAsyncAction, 0, text);
 }
 
