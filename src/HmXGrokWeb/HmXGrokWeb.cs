@@ -32,6 +32,7 @@ public partial class HmXGrokWeb
 
     public void PasteToBrowserPane(String text)
     {
+        CaptureClipboard();
         // クリップボードにテキストを保存
         Clipboard.SetText(text);
 
