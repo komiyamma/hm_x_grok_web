@@ -1,0 +1,192 @@
+// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.4
+
+// 前回分が実行されずに溜まっていたら除去
+var timeHandleOfWindowCloseCheck;
+if (typeof(timeHandleOfWindowCloseCheck) != "undefined") {
+    hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
+}
+
+// AIウィンドウを１つだけに絞る処理(他のAIシリーズがレンダリングペイン実装なので無理やり辻褄をあわせている)
+function oneAIWindowFrameCheck() {
+
+    if (!isOneAtTimeAIRenderPane) {
+        return;
+    }
+
+    try {
+
+        let lastAiRenderPaneTargetName = getstaticvariable("OneAtTimeAIRenderPane", 2);
+
+        // 自分だよ、何もしない。
+        if (lastAiRenderPaneTargetName == renderPaneTargetName) {
+            return;
+        }
+
+        // 他のAIマクロがAIパネル枠を利用しているなら、閉じる
+        if (lastAiRenderPaneTargetName) {
+            const param = {
+                target: lastAiRenderPaneTargetName,
+                show: 0,
+            };
+
+            renderpanecommand(param);
+        }
+    } catch (err) {
+        outputAlert(err);
+    }
+}
+
+// AIウィンドウを１つだけに絞る処理情報の上書き
+function oneAIWindowFrameUpdate() {
+
+    if (!isOneAtTimeAIRenderPane) {
+        return;
+    }
+
+    setstaticvariable("OneAtTimeAIRenderPane", renderPaneTargetName, 2);
+
+    timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
+}
+
+
+// 自分自身でGeminiウィンドウを終了するかチェック継続
+// 本来なら他のAIシリーズがクローズするのであるが、
+// HmGoogleGeminiWebはレンダリングペイン実装ではなく、個別ブラウザ枠実装なので無理やり辻褄をあわせている
+function oneAIWindowCloseCheck() {
+
+    // 他のAIシリーズのウィンドウが開かれていたら、
+    let lastAiRenderPaneTargetName = getstaticvariable("OneAtTimeAIRenderPane", 2);
+
+    // 同じということは状況が継続している。
+    if (lastAiRenderPaneTargetName == renderPaneTargetName) {
+        timeHandleOfWindowCloseCheck = hidemaru.setTimeout(oneAIWindowCloseCheck, 300);
+        return;
+    }
+
+    // クローズタイマーは無意味になってるので終了
+    hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
+
+    // 個別ブラウザ枠が、このGeminiだと思われるならば、
+    let url = browserpanecommand({
+        "target": "_each",
+        "get": "url",
+    });
+
+    // 新たなAIがWebならなにもしない。同じ個別ブラウザで開かれるだろうから
+    if (lastAiRenderPaneTargetName.endsWith("Web")) {
+        return;
+    }
+    
+    // 個別ブラウザ枠がGeminiサイトならば、閉じる(万全ではないが、まぁ仕方がないだろう)
+    if (url.includes(baseUrl)) {
+        browserpanecommand({
+            target: "_each",
+            show: 0
+        });
+    }
+
+}
+
+function waitBrowserPane(text) {
+    const status = browserpanecommand({
+        target: "_each",
+        get: "readyState"
+    });
+    
+    if (status == "complete") {
+        setFocusToBrowserPane();
+        timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 300, text);
+    }
+    
+    else {
+        timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 300, text);
+    }
+}
+
+
+function onCompleteBrowserPane(text) {
+    try {
+        setFocusToBrowserPane();
+        browserpanecommand({
+            target: "_each",
+            "focusinputfield" : 1,
+        });
+        com.PasteToBrowserPane(text);
+    } catch(e) {
+    } finally {
+        onCompleteBrowserPaneDecorator?.(text);
+        timeHandleOfDoMain = hidemaru.setTimeout(onBeginAIAnswer, 2000);
+    }
+}
+
+function setFocusToBrowserPane() {
+    const eachBrowserPane = 6;
+    setfocus(eachBrowserPane);
+}
+
+var orgFocus = getfocus();
+function onBeginAIAnswer() {
+    setfocus(orgFocus);
+    restoreClipBoard();
+    
+    onEndMacroDecorator?.();
+}
+
+
+function captureClipBoard() {
+    try {
+        com.CaptureClipboard();
+    } catch(e) {}
+}
+
+function restoreClipBoard() {
+    try {
+        // Windows 10 の 1809 以降にはクリップボード履歴がある
+        var processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis" );
+        processInfo.onClose = function() {
+            // 普通のクリップボードの復元
+            com.RestoreClipboard();
+        }
+    } catch(e) {}
+}
+
+function getQuestionText() {
+
+    // 外部からカスタムで定義されている。
+    if (typeof(onRequestQuestionText) == "function") {
+        return onRequestQuestionText();
+    }
+
+    return getselectedtext();
+}
+
+// 前回分が実行されずに溜まっていたら除去
+var timeHandleOfDoMain;
+if (typeof(timeHandleOfDoMain) != "undefined") {
+    hidemaru.clearTimeout(timeHandleOfDoMain);
+}
+
+// メイン処理
+function doMain() {
+
+    // 質問内容のテキスト。外部マクロからquestion内容を上書きしやすいようにするため、ここだけ同期
+    let text = getQuestionText();
+    if (!text) {
+        return;
+    }
+
+    timeHandleOfDoMain = hidemaru.setTimeout(doAsyncAction, 0, text);
+}
+
+// 秀丸の同期スレッドに負荷をかけないため、非同期に逃がす
+function doAsyncAction(text) {
+    // AIウィンドウフレームに絞るかどうか
+    oneAIWindowFrameCheck();
+
+    // ブラウザウィンドウ開く
+    openRenderPaneCommand(text);
+
+    // AIウィンドウフレーム情報更新
+    oneAIWindowFrameUpdate();
+}
+
