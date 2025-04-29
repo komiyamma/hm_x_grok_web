@@ -29,6 +29,7 @@ const renderPaneTargetName = "HmXGrokWeb";
 
 const currentMacroDirectory = currentmacrodirectory();
 
+const com = createobject(currentMacroDirectory + "\\HmXGrokWeb.dll", "HmXGrokWeb.HmXGrokWeb");
 
 // 前回分が実行されずに溜まっていたら除去
 var timeHandleOfWindowCloseCheck;
@@ -146,20 +147,97 @@ function makeUrl(baseUrl, text) {
 // ブラウザウィンドウオープン
 function openRenderPaneCommand(text) {
 
-    const url = makeUrl(baseUrl, text);
+    // 個別ブラウザ枠が、このCopilotだと思われるならば、
+    let url = browserpanecommand({
+        "target": "_each",
+        "get": "url",
+    });
 
-    let renderPaneOriginalParam = {
-        target: "_each",
-        url: url,
-        initialize: "async",
-        show: 1,
-        size: 450,
-    };
+    // 開かれていない時だけ...
+    if (!url.includes(baseUrl)) {
 
-    const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
+        const url = makeUrl(baseUrl, text);
 
-    browserpanecommand(browserPaneMixParam);
+        let renderPaneOriginalParam = {
+            target: "_each",
+            url: url,
+            initialize: "async",
+            show: 1,
+            size: 450,
+        };
+
+        const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
+
+        browserpanecommand(browserPaneMixParam);
+        restoreClipBoard();
+        
+    }
+    
+    // すでにHmXGrokWeb が開かている
+    else {
+        hidemaru.setTimeout(waitBrowserPane, 0, text);
+    }
 }
+
+function waitBrowserPane(text) {
+    const status = browserpanecommand({
+        target: "_each",
+        get: "readyState"
+    });
+    
+    if (status == "complete") {
+        setFocusToBrowserPane();
+        timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 300, text);
+    }
+    
+    else {
+        timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 300, text);
+    }
+}
+
+function onCompleteBrowserPane(text) {
+    try {
+        browserpanecommand({
+            target: "_each",
+            "focusinputfield" : 1,
+        });
+        com.PasteToBrowserPane(text);
+    } catch(e) {
+    } finally {
+        timeHandleOfDoMain = hidemaru.setTimeout(onBeginAIAnswer, 2000);
+    }
+}
+
+function setFocusToBrowserPane() {
+    const eachBrowserPane = 6;
+    setfocus(eachBrowserPane);
+}
+
+var orgFocus = getfocus();
+function onBeginAIAnswer() {
+    browserpanecommand({
+        target: "_each",
+        restoremaximize:1,
+        invisible: 0
+    });
+    
+    const browserPaneMixParam = { ...{"target": "_each"}, ...renderPaneCustomParam };
+    browserpanecommand(browserPaneMixParam);
+    setfocus(orgFocus);
+}
+
+function saveClipBoard() {
+    try {
+        com.CaptureClipboard();
+    } catch(e) {}
+}
+
+function restoreClipBoard() {
+    try {
+        com.RestoreClipboard();
+    } catch(e) {}
+}
+
 
 // 前回分が実行されずに溜まっていたら除去
 var timeHandleOfDoMain;
@@ -176,6 +254,9 @@ function doMain() {
         return;
     }
 
+    saveClipBoard();
+    setclipboard( text );
+    
     timeHandleOfDoMain = hidemaru.setTimeout(doAsyncAction, 0, text);
 }
 
