@@ -227,7 +227,6 @@ function onBeginAIAnswer() {
     restoreClipBoard();
 }
 
-debuginfo(2);
 function captureClipBoard() {
     try {
         console.log("キャプチャー");
