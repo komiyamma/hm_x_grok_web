@@ -37,12 +37,13 @@ function notContinueIfFirstAIConversation() {
     return true;
 }
 
-// urlの構築
-function makeRenderPaneUrl(baseUrl, text) {
+// 初回の時の特別なパラメータ
+function firstParamDecorator(baseUrl, text) {
     const absoluteUrl = new URL(baseUrl);
     const params = new URLSearchParams({ q: text });
     absoluteUrl.search = params.toString();
-    return absoluteUrl.href;
+    
+    return {url: absoluteUrl.href};
 }
 
 doMain();
