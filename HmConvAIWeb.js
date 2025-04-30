@@ -1,4 +1,8 @@
+
 // HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.4
+// 全「Hm*****Web」シリーズで共通。
+
+// このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
 var com = createobject(`${currentMacroDirectory}\\${renderPaneTargetName}.dll`, `${renderPaneTargetName}.${renderPaneTargetName}`);
 
 // エラーメッセージ用
@@ -137,8 +141,6 @@ function openRenderPaneCommand(text) {
                 secondParam = secondParamDecorator(baseUrl, text);
             }
             const browserPaneMixParam = { ...{ target:"_each"}, ...renderPaneCustomParam, ...secondParam };
-            debuginfo(2);
-            console.log(JSON.stringify(browserPaneMixParam));
             browserpanecommand(browserPaneMixParam);
         }
         
@@ -205,25 +207,28 @@ function onCompleteBrowserPane(text) {
             onPrevKeySendDecorator();
         }
         
+        setFocusToBrowserPane();
         timeHandleOfDoMain = hidemaru.setTimeout(
         () => {
+            setFocusToBrowserPane();
             sendCtrlV();
             timeHandleOfDoMain = hidemaru.setTimeout(
             () => {
+                setFocusToBrowserPane();
                 sendReturn();
                 nextProcedure();
             }, 300);
         }, 300);
     } catch(e) {
-        debuginfo(2);
-        console.log(e);
     } finally {
     }
 }
 
 function setFocusToBrowserPane() {
-    const eachBrowserPane = 6;
-    setfocus(eachBrowserPane);
+    browserpanecommand({
+        target: "_each",
+        focus: 1
+    });
 }
 
 var orgFocus = getfocus();
