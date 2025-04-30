@@ -35,9 +35,27 @@ public partial class HmXGrokWeb
 
     public void CaptureForBrowserPane(String text)
     {
-        CaptureClipboard();
-        // クリップボードにテキストを保存
-        Clipboard.SetText(text);
+        try
+        {
+            CaptureClipboard();
+        }
+        catch (Exception ex)
+        {
+            Task.Delay(300).Wait();
+            // クリップボードにテキストを保存
+            CaptureClipboard();
+        }
+        try
+        {
+            Clipboard.SetText(text);
+        }
+        catch (Exception ex)
+        {
+            Task.Delay(300).Wait();
+            // クリップボードにテキストを保存
+            Clipboard.SetText(text);
+        }
+
     }
 
     public void SendCtrlVSync()
@@ -61,6 +79,11 @@ public partial class HmXGrokWeb
 
     private static async void SendCtrlV()
     {
+        // Shift キーを解放
+        keybd_event(VK_SHIFT, 0, KEYEVENTF_KEYUP, 0);
+        // Alt キーを解放
+        keybd_event(VK_ALT, 0, KEYEVENTF_KEYUP, 0);
+
         // Ctrl キーを押下
         keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYDOWN, 0);
         // V キーを押下
