@@ -127,10 +127,9 @@ function openRenderPaneCommand(text) {
             browserpanecommand(browserPaneMixParam);
             
             // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
-            if (typeof("notContinueIfFirstAIConversation") != "undefined" && notContinueIfFirstAIConversation) {
+            if (typeof(notContinueIfFirstAIConversation) == "function" && notContinueIfFirstAIConversation()) {
                 return;
             }
-
         } else {
             const browserPaneMixParam = { ...{ target:"_each"}, ...renderPaneCustomParam };
             browserpanecommand(browserPaneMixParam);
@@ -209,6 +208,8 @@ function onCompleteBrowserPane(text) {
             }, 300);
         }, 300);
     } catch(e) {
+        debuginfo(2);
+        console.log(e);
     } finally {
     }
 }
