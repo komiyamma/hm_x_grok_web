@@ -6,7 +6,7 @@
  */
 
 
-hidemaruversion "9.35.99";
+hidemaruversion "9.39.99";
 
 jsmode @"WebView2\HmXGrokWeb";
 
@@ -32,11 +32,6 @@ const currentMacroDirectory = currentmacrodirectory();
 const script = hidemaru.loadTextFile(currentMacroDirectory + "\\HmConvAIWeb.js");
 eval(script);
 
-// 最初のAI会話においては、送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
-function notContinueIfFirstAIConversation() {
-    return true;
-}
-
 // 初回の時の特別なパラメータ
 function firstParamDecorator(baseUrl, text) {
     const absoluteUrl = new URL(baseUrl);
@@ -45,6 +40,12 @@ function firstParamDecorator(baseUrl, text) {
     
     return {url: absoluteUrl.href};
 }
+
+// 最初のAI会話においては、キー送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
+function notContinueIfFirstAIConversation() {
+    return true;
+}
+
 
 doMain();
 

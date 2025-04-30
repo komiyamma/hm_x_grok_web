@@ -239,6 +239,11 @@ function onEndQuestionToAI() {
     if (typeof(onEndMacroDecorator) == "function") {
         onEndMacroDecorator();
     }
+
+    // ２つ履歴が増えるので消してしまう
+    timeHandleOfDoMain = hidemaru.setTimeout(() => {
+        hidemaru.postExecMacroMemory( "clearcliphist 0; clearcliphist 0;" );
+    }, 0);
 }
 
 
