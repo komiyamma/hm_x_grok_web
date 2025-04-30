@@ -1,4 +1,7 @@
 
+/// <reference path="../types/hm_jsmode.d.ts" />
+
+
 // HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.4
 // 全「Hm*****Web」シリーズで共通。
 
@@ -17,7 +20,7 @@ function outputAlert(msg) {
 
 // 前回分が実行されずに溜まっていたら除去
 var timeHandleOfWindowCloseCheck;
-if (typeof(timeHandleOfWindowCloseCheck) != "undefined") {
+if (typeof (timeHandleOfWindowCloseCheck) != "undefined") {
     hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
 }
 
@@ -91,7 +94,7 @@ function oneAIWindowCloseCheck() {
     if (lastAiRenderPaneTargetName.endsWith("Web")) {
         return;
     }
-    
+
     // 個別ブラウザ枠がGeminiサイトならば、閉じる(万全ではないが、まぁ仕方がないだろう)
     if (url.includes(baseUrl)) {
         browserpanecommand({
@@ -114,39 +117,39 @@ function openRenderPaneCommand(text) {
 
         // 開かれていない時だけ...
         if (!url.includes(baseUrl)) {
-            
+
             let firstParam = {};
-            if (typeof(firstParamDecorator) == "function") {
+            if (typeof (firstParamDecorator) == "function") {
                 firstParam = firstParamDecorator(baseUrl, text);
             }
-            
+
             let renderPaneOriginalParam = {
                 url: baseUrl,
                 target: "_each",
                 initialize: "async",
                 show: 1
             };
-            
+
             const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam, ...firstParam };
             browserpanecommand(browserPaneMixParam);
-            
+
             // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
-            if (typeof(notContinueIfFirstAIConversation) == "function" && notContinueIfFirstAIConversation()) {
+            if (typeof (notContinueIfFirstAIConversation) == "function" && notContinueIfFirstAIConversation()) {
                 return;
             }
         } else {
             // ２回目の実行以降のパラメータという意味のメソッド名を３つ
             let secondParam = {};
-            if (typeof(secondParamDecorator) == "function") {
+            if (typeof (secondParamDecorator) == "function") {
                 secondParam = secondParamDecorator(baseUrl, text);
             }
-            const browserPaneMixParam = { ...{ target:"_each"}, ...renderPaneCustomParam, ...secondParam };
+            const browserPaneMixParam = { ...{ target: "_each" }, ...renderPaneCustomParam, ...secondParam };
             browserpanecommand(browserPaneMixParam);
         }
-        
+
         hidemaru.setTimeout(waitBrowserPane, 0, text);
-        
-    } catch(err) {
+
+    } catch (err) {
         outputAlert(err);
     }
 }
@@ -157,11 +160,11 @@ function waitBrowserPane(text) {
         target: "_each",
         get: "readyState"
     });
-    
+
     if (status == "complete") {
         timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, text);
     }
-    
+
     else {
         timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, text);
     }
@@ -170,19 +173,19 @@ function waitBrowserPane(text) {
 function sendCtrlV() {
     try {
         com.SendCtrlVSync();
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function sendReturn() {
     try {
         com.SendReturnVSync();
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function sendTab() {
     try {
         com.SendTabSync();
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function onCompleteBrowserPane(text) {
@@ -190,36 +193,36 @@ function onCompleteBrowserPane(text) {
         setFocusToBrowserPane();
         browserpanecommand({
             target: "_each",
-            "focusinputfield" : 1,
+            "focusinputfield": 1,
         });
         com.CaptureForBrowserPane(text);
-        
-        
+
+
         function nextProcedure() {
-            if (typeof(onCompleteBrowserPaneDecorator) == "function") {
+            if (typeof (onCompleteBrowserPaneDecorator) == "function") {
                 onCompleteBrowserPaneDecorator(text);
             }
             timeHandleOfDoMain = hidemaru.setTimeout(onEndQuestionToAI, 200);
         }
-        
+
         // キー送信を開始する前に、デコレータによるキー送信がある。
-        if (typeof(onPrevKeySendDecorator) == "function") {
+        if (typeof (onPrevKeySendDecorator) == "function") {
             onPrevKeySendDecorator();
         }
-        
+
         setFocusToBrowserPane();
         timeHandleOfDoMain = hidemaru.setTimeout(
-        () => {
-            setFocusToBrowserPane();
-            sendCtrlV();
-            timeHandleOfDoMain = hidemaru.setTimeout(
             () => {
                 setFocusToBrowserPane();
-                sendReturn();
-                nextProcedure();
+                sendCtrlV();
+                timeHandleOfDoMain = hidemaru.setTimeout(
+                    () => {
+                        setFocusToBrowserPane();
+                        sendReturn();
+                        nextProcedure();
+                    }, 300);
             }, 300);
-        }, 300);
-    } catch(err) {
+    } catch (err) {
         outputAlert(err);
     } finally {
     }
@@ -233,14 +236,11 @@ function setFocusToBrowserPane() {
 }
 
 var orgFocus = getfocus();
-function onEndQuestionToAI() {
+async function onEndQuestionToAI() {
     setfocus(orgFocus);
-    restoreClipBoard();
-    
-    if (typeof(onEndMacroDecorator) == "function") {
-        onEndMacroDecorator();
-    }
-    
+
+    // 再実行してもここまで来てたらこれはやめないよっと。
+    restoreClipBoard()
 
     /*
     // ２つ履歴が増えるので消してしまう
@@ -248,31 +248,51 @@ function onEndQuestionToAI() {
         hidemaru.postExecMacroMemory( "clearcliphist 0; clearcliphist 0;" );
     }, 0);
     */
+
+
+}
+
+function execEndMacroDecorator() {
+    if (typeof (onEndMacroDecorator) == "function") {
+        onEndMacroDecorator();
+    }
 }
 
 
 function captureClipBoard() {
     try {
         com.CaptureClipboard();
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function restoreClipBoard() {
-    
+
     try {
         // Windows 10 の 1809 以降にはクリップボード履歴がある
-        let processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis" );
-        processInfo.onClose = function() {
-            // 普通のクリップボードの復元
-            com.RestoreClipboard();
+        let processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis");
+        if (processInfo) {
+            processInfo.onClose = function () {
+                try {
+                    // 普通のクリップボードの復元
+                    com.RestoreClipboard();
+                    if (processInfo) {
+                        processInfo.kill();
+                        processInfo = null;
+                    }
+                } catch (e) {
+                } finally {
+                    execEndMacroDecorator();
+                }
+            }
+
         }
-    } catch(e) {}
+    } catch (e) { }
 }
 
 function getQuestionText() {
 
     // 外部からカスタムで定義されている。
-    if (typeof(onRequestQuestionText) == "function") {
+    if (typeof (onRequestQuestionText) == "function") {
         return onRequestQuestionText();
     }
 
@@ -281,7 +301,7 @@ function getQuestionText() {
 
 // 前回分が実行されずに溜まっていたら除去
 var timeHandleOfDoMain;
-if (typeof(timeHandleOfDoMain) != "undefined") {
+if (typeof (timeHandleOfDoMain) != "undefined") {
     hidemaru.clearTimeout(timeHandleOfDoMain);
 }
 
