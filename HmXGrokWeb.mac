@@ -32,6 +32,9 @@ const currentMacroDirectory = currentmacrodirectory();
 const script = hidemaru.loadTextFile(currentMacroDirectory + "\\HmConvAIWeb.js");
 eval(script);
 
+// 最初のAI会話においては、送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
+var notContinueIfFirstAIConversation = true;
+
 // urlの構築
 function makeRenderPaneUrl(baseUrl, text) {
     const absoluteUrl = new URL(baseUrl);

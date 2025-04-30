@@ -5,7 +5,7 @@ var com = createobject(`${currentMacroDirectory}\\${renderPaneTargetName}.dll`, 
 function outputAlert(msg) {
     if (msg == null) { return; }
     if (msg == "") { return; }
-    var dll = loaddll("HmOutputPane.dll");
+    const dll = loaddll("HmOutputPane.dll");
     msg = msg.toString().replace(/\r\n/g, "\n").replace(/\n/g, "\r\n");
     dll.dllFuncW.OutputW(hidemaru.getCurrentWindowHandle(), msg + "\r\n");
 }
@@ -124,7 +124,15 @@ function openRenderPaneCommand(text) {
             };
             
             const browserPaneMixParam = { ...renderPaneOriginalParam, ...renderPaneCustomParam };
+            browserpanecommand(browserPaneMixParam);
             
+            // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
+            if (typeof("notContinueIfFirstAIConversation") != "undefined" && notContinueIfFirstAIConversation) {
+                return;
+            }
+
+        } else {
+            const browserPaneMixParam = { ...{ target:"_each"}, ...renderPaneCustomParam };
             browserpanecommand(browserPaneMixParam);
         }
         
@@ -143,15 +151,31 @@ function waitBrowserPane(text) {
     });
     
     if (status == "complete") {
-        setFocusToBrowserPane();
-        timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 300, text);
+        timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, text);
     }
     
     else {
-        timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 300, text);
+        timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, text);
     }
 }
 
+function sendCtrlV() {
+    try {
+        com.SendCtrlVSync();
+    } catch(e) {}
+}
+
+function sendReturn() {
+    try {
+        com.SendReturnVSync();
+    } catch(e) {}
+}
+
+function sendTab() {
+    try {
+        com.SendTabSync();
+    } catch(e) {}
+}
 
 function onCompleteBrowserPane(text) {
     try {
@@ -160,13 +184,32 @@ function onCompleteBrowserPane(text) {
             target: "_each",
             "focusinputfield" : 1,
         });
-        com.PasteToBrowserPane(text);
+        com.CaptureForBrowserPane(text);
+        
+        
+        function nextProcedure() {
+            if (typeof(onCompleteBrowserPaneDecorator) == "function") {
+                onCompleteBrowserPaneDecorator(text);
+            }
+            timeHandleOfDoMain = hidemaru.setTimeout(onEndQuestionToAI, 200);
+        }
+        
+        // キー送信を開始する前に、デコレータによるキー送信がある。
+        if (typeof(onPrevKeySendDecorator) == "function") {
+            onPrevKeySendDecorator();
+        }
+        
+        timeHandleOfDoMain = hidemaru.setTimeout(
+        () => {
+            sendCtrlV();
+            timeHandleOfDoMain = hidemaru.setTimeout(
+            () => {
+                sendReturn();
+                nextProcedure();
+            }, 300);
+        }, 300);
     } catch(e) {
     } finally {
-        if (typeof(onCompleteBrowserPaneDecorator) == "function") {
-            onCompleteBrowserPaneDecorator(text);
-        }
-        timeHandleOfDoMain = hidemaru.setTimeout(onBeginAIAnswer, 2000);
     }
 }
 
@@ -176,12 +219,12 @@ function setFocusToBrowserPane() {
 }
 
 var orgFocus = getfocus();
-function onBeginAIAnswer() {
+function onEndQuestionToAI() {
     setfocus(orgFocus);
     restoreClipBoard();
     
     if (typeof(onEndMacroDecorator) == "function") {
-        onEndMacroDecorator?.();
+        onEndMacroDecorator();
     }
 }
 
@@ -196,7 +239,7 @@ function restoreClipBoard() {
     
     try {
         // Windows 10 の 1809 以降にはクリップボード履歴がある
-        var processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis" );
+        let processInfo = hidemaru.runProcess(currentMacroDirectory + "\\ClipboardHistMngr.exe", ".", "stdio", "sjis" );
         processInfo.onClose = function() {
             // 普通のクリップボードの復元
             com.RestoreClipboard();
