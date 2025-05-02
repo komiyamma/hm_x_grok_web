@@ -2,7 +2,7 @@
 /// <reference path="../types/hm_jsmode.d.ts" />
 
 
-// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.4
+// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.5
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -67,9 +67,9 @@ function oneAIWindowFrameUpdate() {
 }
 
 
-// 自分自身でGeminiウィンドウを終了するかチェック継続
+// 自分自身でAIウィンドウを終了するかチェック継続
 // 本来なら他のAIシリーズがクローズするのであるが、
-// HmGoogleGeminiWebはレンダリングペイン実装ではなく、個別ブラウザ枠実装なので無理やり辻褄をあわせている
+// Hm*****Webはレンダリングペイン実装ではなく、個別ブラウザ枠実装なので無理やり辻褄をあわせている
 function oneAIWindowCloseCheck() {
 
     // 他のAIシリーズのウィンドウが開かれていたら、
@@ -84,7 +84,7 @@ function oneAIWindowCloseCheck() {
     // クローズタイマーは無意味になってるので終了
     hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
 
-    // 個別ブラウザ枠が、このGeminiだと思われるならば、
+    // 個別ブラウザ枠が、このAIだと思われるならば、
     let url = browserpanecommand({
         "target": "_each",
         "get": "url",
@@ -95,7 +95,7 @@ function oneAIWindowCloseCheck() {
         return;
     }
 
-    // 個別ブラウザ枠がGeminiサイトならば、閉じる(万全ではないが、まぁ仕方がないだろう)
+    // 個別ブラウザ枠がこのAIのサイトならば、閉じる(万全ではないが、まぁ仕方がないだろう)
     if (url.includes(baseUrl)) {
         browserpanecommand({
             target: "_each",
@@ -161,12 +161,26 @@ function waitBrowserPane(text) {
         get: "readyState"
     });
 
+    let waitTimeout = null;
+    if (typeof(waitBrowserPaneDecorator)=="function") {
+        waitTimeout = waitBrowserPaneDecorator(status);
+    }
+    
+
     if (status == "complete") {
-        timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, text);
+        if (waitTimeout && waitTimeout > 500) {
+            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, waitTimeout, text);
+        } else {
+            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, text);
+        }
     }
 
     else {
-        timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, text);
+        if (waitTimeout && waitTimeout > 500) {
+            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, waitTimeout, text);
+        } else {
+            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, text);
+        }
     }
 }
 
