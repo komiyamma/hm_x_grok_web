@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.0.5
+ * HmXGrokWeb v 1.1.0.7
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -34,6 +34,10 @@ eval(script);
 
 // 初回の時の特別なパラメータ
 function firstParamDecorator(baseUrl, text) {
+    // スペースしかなければ、空文字
+    text = text.trim() === "" ? "" : text;
+    
+    // URLの構築
     const absoluteUrl = new URL(baseUrl);
     const params = new URLSearchParams({ q: text });
     absoluteUrl.search = params.toString();
