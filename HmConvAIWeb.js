@@ -2,7 +2,7 @@
 /// <reference path="../types/hm_jsmode.d.ts" />
 
 
-// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.5
+// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.6
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -138,6 +138,8 @@ function openRenderPaneCommand(text) {
                 return;
             }
         } else {
+            focusInputField();
+            
             // ２回目の実行以降のパラメータという意味のメソッド名を３つ
             let secondParam = {};
             if (typeof (secondParamDecorator) == "function") {
@@ -262,9 +264,35 @@ async function onEndQuestionToAI() {
         hidemaru.postExecMacroMemory( "clearcliphist 0; clearcliphist 0;" );
     }, 0);
     */
-
-
 }
+
+var processInfoFocus;
+processInfoFocus?.kill();
+
+function focusInputField() {
+    var command = currentMacroDirectory + "\\HmFocusEachBrowserInputField.exe " + hidemaru.getCurrentWindowHandle();
+    processInfoFocus = hidemaru.runProcess(command, ".", "stdio", "utf8");
+    if (!processInfoFocus) {
+        if (typeof (focusInputFieldFailDecorator) == "function") {
+            focusInputFieldFailDecorator();
+        }
+        return;
+    }
+
+    processInfoFocus.stdOut.onReadLine((text)=> {
+        if (typeof (focusInputSuccessDecorator) == "function") {
+            focusInputSuccessDecorator();
+        }
+    });
+
+    processInfoFocus.stdErr.onReadLine((text)=> {
+        if (typeof (focusInputFailDecorator) == "function") {
+            focusInputFailDecorator();
+        }
+    });
+    
+}
+
 
 function execEndMacroDecorator() {
     if (typeof (onEndMacroDecorator) == "function") {
@@ -298,7 +326,8 @@ function restoreClipBoard() {
                     execEndMacroDecorator();
                 }
             }
-
+        } else {
+            execEndMacroDecorator();
         }
     } catch (e) { }
 }

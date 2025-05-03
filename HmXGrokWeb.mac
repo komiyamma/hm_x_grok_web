@@ -46,7 +46,6 @@ function notContinueIfFirstAIConversation() {
     return true;
 }
 
-
 doMain();
 
 } // js
