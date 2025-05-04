@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.0.7
+ * HmXGrokWeb v 1.1.0.8
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -18,7 +18,7 @@ const baseUrl = "https://grok.com/";
 
 const renderPaneCustomParam = {
     place: "rightside",            // leftside | rightside | upside | downside
-    size: 450,                     // 左や右の配置の時は、横幅のこと。上や下の配置の時は縦幅のこと。
+    size: 900,                     // 左や右の配置の時は、横幅のこと。上や下の配置の時は縦幅のこと。
 };
 
 const isOneAtTimeAIRenderPane = 1; // AI関連のレンダリング枠は(他の種類のAIも含め)１つだけにする。(複数起動しそうになると、前のものが閉じる）

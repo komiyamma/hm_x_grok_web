@@ -11,3 +11,7 @@ https://秀丸マクロ.net/?page=nobu_tool_hm_x_grok_web
 ## ClipboardHistMngr.exe のソース
 
 https://github.com/komiyamma/winapp_delete_clipboard_history/tree/main
+
+## HmFocusEachBrowserInputField.exe のソース
+
+https://github.com/komiyamma/hm_focus_each_browser_input_field

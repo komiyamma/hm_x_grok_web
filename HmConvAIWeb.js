@@ -2,7 +2,7 @@
 /// <reference path="../types/hm_jsmode.d.ts" />
 
 
-// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.6
+// HmConvAIWeb.js 共通ライブラリ。 v 1.0.0.8
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -145,7 +145,17 @@ function openRenderPaneCommand(text) {
             if (typeof (secondParamDecorator) == "function") {
                 secondParam = secondParamDecorator(baseUrl, text);
             }
-            const browserPaneMixParam = { ...{ target: "_each" }, ...renderPaneCustomParam, ...secondParam };
+            let browserPaneMixParam = { ...{ target: "_each" }, ...renderPaneCustomParam, ...secondParam };
+
+            // 現在のサイズとプレースと同じであれば、再度送信する意味がない(ピクっとしてしまうのを防止）
+            let currentSize = browserpanecommand({target: "_each", get:"size"});
+            let currentPlace = browserpanecommand({target: "_each", get:"place"});
+            if (browserPaneMixParam.size == currentSize && browserPaneMixParam.place == currentPlace) {
+                browserPaneMixParam.size = undefined;
+                browserPaneMixParam.place = undefined;
+            }
+
+            console.log(JSON.stringify(browserPaneMixParam));
             browserpanecommand(browserPaneMixParam);
         }
 
@@ -194,7 +204,7 @@ function sendCtrlV() {
 
 function sendReturn() {
     try {
-        com.SendReturnVSync();
+        com.SendReturnSync();
     } catch (e) { }
 }
 
