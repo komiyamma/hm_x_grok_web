@@ -2,7 +2,7 @@
 /// <reference path="../types/hm_jsmode.d.ts" />
 
 
-// HmConvAIWeb.js 共通ライブラリ。 v 1.1.0.1
+// HmConvAIWeb.js 共通ライブラリ。 v 1.1.0.2
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -371,6 +371,10 @@ function doMain() {
 
     // 質問内容のテキスト。外部マクロからquestion内容を上書きしやすいようにするため、ここだけ同期
     let text = getQuestionText();
+    
+    // 利用したのでユーザーのオーバーライド関数は消す
+    onRequestQuestionText = undefined;
+    
     if (!text) {
         return;
     }
