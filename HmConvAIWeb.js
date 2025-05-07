@@ -2,7 +2,7 @@
 /// <reference path="../types/hm_jsmode.d.ts" />
 
 
-// HmConvAIWeb.js 共通ライブラリ。 v 1.1.0.2
+// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.1
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -142,10 +142,6 @@ function openRenderPaneCommand(text) {
 
             browserpanecommand(browserPaneMixParam);
 
-            // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
-            if (typeof (notContinueIfFirstAIConversation) == "function" && notContinueIfFirstAIConversation()) {
-                return;
-            }
         } else {
             focusInputField();
             
@@ -167,8 +163,8 @@ function openRenderPaneCommand(text) {
             browserpanecommand(browserPaneMixParam);
         }
 
+        // 有意な文字列がtextに含まれている時だけ次へ進んでいく。
         hidemaru.setTimeout(waitBrowserPane, 0, text);
-
     } catch (err) {
         outputAlert(err);
     }
@@ -222,13 +218,35 @@ function sendTab() {
     } catch (e) { }
 }
 
+function textHasValidCharacter(text) {
+    // text が空白や改行系以外の有意な文字を持っているかを判定する。（JSで）
+    // 空白文字（スペース、タブ、改行など）を除去
+    const trimmed = text.replace(/\s/g, '');
+    // 除去後に文字列が空でないかを返す
+    return trimmed.length > 0;
+}
+
 function onCompleteBrowserPane(text) {
     try {
+        // 有意なキャラをもっていないなら、ここで選択解除(起動しただけの意思)
+        if (!textHasValidCharacter(text)) {
+            escapeselect();
+        }
         setFocusToBrowserPane();
         browserpanecommand({
             target: "_each",
             "focusinputfield": 1,
         });
+
+        // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
+        if (typeof (onlyOpenWindowCondition) == "function" && onlyOpenWindowCondition()) {
+            return;
+        }
+        
+        if (!textHasValidCharacter(text)) {
+            return;
+        }
+        
         com.CaptureForBrowserPane(text);
 
 
@@ -256,6 +274,7 @@ function onCompleteBrowserPane(text) {
                         nextProcedure();
                     }, 300);
             }, 300);
+
     } catch (err) {
         outputAlert(err);
     } finally {

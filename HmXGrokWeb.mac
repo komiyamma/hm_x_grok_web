@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.1.2
+ * HmXGrokWeb v 1.1.1.3
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -46,8 +46,11 @@ function firstParamDecorator(baseUrl, text) {
 }
 
 // 最初のAI会話においては、キー送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
-function notContinueIfFirstAIConversation() {
-    return true;
+function onlyOpenWindowCondition() {
+     const url = browserpanecommand({target:"_each", get:"url"});
+     if (url == baseUrl) {
+         return true;
+     }
 }
 
 doMain();
