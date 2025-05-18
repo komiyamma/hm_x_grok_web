@@ -1,8 +1,4 @@
-
-/// <reference path="../types/hm_jsmode.d.ts" />
-
-
-// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.1
+// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.3
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -23,6 +19,7 @@ var timeHandleOfWindowCloseCheck;
 if (typeof (timeHandleOfWindowCloseCheck) != "undefined") {
     hidemaru.clearTimeout(timeHandleOfWindowCloseCheck);
 }
+
 
 // AIウィンドウを１つだけに絞る処理(他のAIシリーズがレンダリングペイン実装なので無理やり辻褄をあわせている)
 function oneAIWindowFrameCheck() {
@@ -105,10 +102,13 @@ function oneAIWindowCloseCheck() {
 
 }
 
+
 // ブラウザウィンドウオープン
 function openRenderPaneCommand(text) {
 
     try {
+         let id = incrementCyclicNumber();
+
         // 個別ブラウザ枠が、このAIのウィンドウだと思われるならば、
         let url = browserpanecommand({
             "target": "_each",
@@ -141,9 +141,14 @@ function openRenderPaneCommand(text) {
             }
 
             browserpanecommand(browserPaneMixParam);
+            id = -1;
+            // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
+            if (typeof (onlyOpenWindowCondition) == "function" && onlyOpenWindowCondition()) {
+                return;
+            }
 
         } else {
-            focusInputField();
+            id = focusInputField({text, id});
             
             // ２回目の実行以降のパラメータという意味のメソッド名を３つ
             let secondParam = {};
@@ -164,14 +169,15 @@ function openRenderPaneCommand(text) {
         }
 
         // 有意な文字列がtextに含まれている時だけ次へ進んでいく。
-        hidemaru.setTimeout(waitBrowserPane, 0, text);
+        hidemaru.setTimeout(waitBrowserPane, 0, {text, id});
     } catch (err) {
         outputAlert(err);
     }
 }
 
 
-function waitBrowserPane(text) {
+function waitBrowserPane({text, id}) {
+
     const status = browserpanecommand({
         target: "_each",
         get: "readyState"
@@ -185,17 +191,17 @@ function waitBrowserPane(text) {
 
     if (status == "complete") {
         if (waitTimeout && waitTimeout > 500) {
-            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, waitTimeout, text);
+            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, waitTimeout, {text, id});
         } else {
-            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, text);
+            timeHandleOfDoMain = hidemaru.setTimeout(onCompleteBrowserPane, 500, {text, id});
         }
     }
 
     else {
         if (waitTimeout && waitTimeout > 500) {
-            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, waitTimeout, text);
+            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, waitTimeout, {text, id});
         } else {
-            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, text);
+            timeHandleOfDoMain = hidemaru.setTimeout(waitBrowserPane, 500, {text, id});
         }
     }
 }
@@ -226,35 +232,46 @@ function textHasValidCharacter(text) {
     return trimmed.length > 0;
 }
 
-function onCompleteBrowserPane(text) {
+function onCompleteBrowserPane({text, id}) {
     try {
         // 有意なキャラをもっていないなら、ここで選択解除(起動しただけの意思)
         if (!textHasValidCharacter(text)) {
             escapeselect();
         }
+        /*
         setFocusToBrowserPane();
         browserpanecommand({
             target: "_each",
             "focusinputfield": 1,
         });
-
-        // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
-        if (typeof (onlyOpenWindowCondition) == "function" && onlyOpenWindowCondition()) {
-            return;
-        }
+        */
         
         if (!textHasValidCharacter(text)) {
             return;
         }
+
+        if (id >= 0) {
+            try {
+                // コピー＆ペーストに頼らずに直接 input 枠へと文字列を転送できたようだ。
+                const tempFileFullPath = getTempFileFullPath(id);
+                const resultCommand = loadTextFile(tempFileFullPath, "utf16");
+                if (resultCommand && resultCommand?.startsWith("HmConvAiWeb.Complete(2)")) { // (2)=フォーカスも代入も完璧
+                    // リターンだけして次へ
+                    sendReturn();
+                    nextProcedure({capture:true});
+                    return;
+                }
+            } catch(e) {}
+        }
         
+        // 以下 コピー＆ペースト＆リターンで質問内容をAIに問う
         com.CaptureForBrowserPane(text);
 
-
-        function nextProcedure() {
+        function nextProcedure(arg) {
             if (typeof (onCompleteBrowserPaneDecorator) == "function") {
                 onCompleteBrowserPaneDecorator(text);
             }
-            timeHandleOfDoMain = hidemaru.setTimeout(onEndQuestionToAI, 200);
+            timeHandleOfDoMain = hidemaru.setTimeout(onEndQuestionToAI, 200, arg);
         }
 
         // キー送信を開始する前に、デコレータによるキー送信がある。
@@ -263,6 +280,7 @@ function onCompleteBrowserPane(text) {
         }
 
         setFocusToBrowserPane();
+        
         timeHandleOfDoMain = hidemaru.setTimeout(
             () => {
                 setFocusToBrowserPane();
@@ -271,7 +289,7 @@ function onCompleteBrowserPane(text) {
                     () => {
                         setFocusToBrowserPane();
                         sendReturn();
-                        nextProcedure();
+                        nextProcedure({capture:true});
                     }, 300);
             }, 300);
 
@@ -289,11 +307,13 @@ function setFocusToBrowserPane() {
 }
 
 var orgFocus = getfocus();
-async function onEndQuestionToAI() {
+async function onEndQuestionToAI({capture}) {
     setfocus(orgFocus);
 
-    // 再実行してもここまで来てたらこれはやめないよっと。
-    restoreClipBoard()
+    if (capture) {
+        // 再実行してもここまで来てたらこれはやめないよっと。
+        restoreClipBoard()
+    }
 
     /*
     // ２つ履歴が増えるので消してしまう
@@ -303,11 +323,29 @@ async function onEndQuestionToAI() {
     */
 }
 
+const tempFolder = getenv("TEMP") || getenv("TMP");
+
+function getTempFileFullPath(id) {
+    const tempFileFullPath = `${tempFolder}\\HmConvAiWeb_${id}.txt`;
+    return tempFileFullPath;
+}
+
 var processInfoFocus;
 processInfoFocus?.kill();
-
-function focusInputField() {
-    var command = currentMacroDirectory + "\\HmFocusEachBrowserInputField.exe " + hidemaru.getCurrentWindowHandle();
+function focusInputField({text, id}) {
+    let tempFileFullPath = "";
+    if (typeof(useInputTransfer) == "function" && useInputTransfer()) {
+        tempFileFullPath = getTempFileFullPath(id);
+        const success = hidemaru.saveTextFile(tempFileFullPath, text, "utf16");
+        if (!success) {
+            // 失敗してるのでidを無効なものに
+            id = -1;
+        }
+    } else {
+        id = -1;
+    }
+    const eachBrowserWindowHandle = 0; // 今はJavaScript側からは取得できない。
+    const command = `"${currentMacroDirectory}\\HmFocusEachBrowserInputField.exe" ${hidemaru.getCurrentWindowHandle()} ${eachBrowserWindowHandle} "${tempFileFullPath}"`;
     processInfoFocus = hidemaru.runProcess(command, ".", "stdio", "utf8");
     if (!processInfoFocus) {
         if (typeof (focusInputFieldFailDecorator) == "function") {
@@ -327,7 +365,18 @@ function focusInputField() {
             focusInputFailDecorator();
         }
     });
-    
+    return id;
+}
+
+// 循環番号の作成
+var cycleNumber; // 宣言のみ
+function incrementCyclicNumber() {
+    if (typeof(cycleNumber) == "undefined") {
+        cycleNumber = 0;
+    }
+    cycleNumber++;
+    cycleNumber = cycleNumber % 10;
+    return cycleNumber;
 }
 
 

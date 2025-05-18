@@ -46,11 +46,12 @@ function firstParamDecorator(baseUrl, text) {
 }
 
 // 最初のAI会話においては、キー送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
-function onlyOpenWindowCondition() {
-     const url = browserpanecommand({target:"_each", get:"url"});
-     if (url == baseUrl) {
-         return true;
-     }
+function firstQuestionOnlyOpenWindow() {
+    return true;
+}
+
+function useInputTransfer() {
+    return true;
 }
 
 doMain();
