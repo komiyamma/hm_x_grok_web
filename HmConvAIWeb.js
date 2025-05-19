@@ -1,4 +1,4 @@
-// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.3
+// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.4
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
@@ -143,7 +143,7 @@ function openRenderPaneCommand(text) {
             browserpanecommand(browserPaneMixParam);
             id = -1;
             // 最初のオープンの時は、処理を継続するな、という関数が定義してあれば、
-            if (typeof (onlyOpenWindowCondition) == "function" && onlyOpenWindowCondition()) {
+            if (typeof (firstQuestionOnlyOpenWindow) == "function" && firstQuestionOnlyOpenWindow()) {
                 return;
             }
 
