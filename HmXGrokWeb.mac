@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.1.3
+ * HmXGrokWeb v 1.1.1.4
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -7,6 +7,8 @@
 
 
 hidemaruversion "9.39.99";
+
+setcompatiblemode 0x08000000;
 
 jsmode @"WebView2\HmXGrokWeb";
 
