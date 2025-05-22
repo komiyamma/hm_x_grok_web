@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 1.1.1.4
+ * HmXGrokWeb v 1.1.1.5
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -34,22 +34,35 @@ const currentMacroDirectory = currentmacrodirectory();
 const script = hidemaru.loadTextFile(currentMacroDirectory + "\\HmConvAIWeb.js");
 eval(script);
 
+let isFirstParamOnlyWindow = true;
+
 // 初回の時の特別なパラメータ
 function firstParamDecorator(baseUrl, text) {
-    // スペースしかなければ、空文字
-    text = text.trim() === "" ? "" : text;
+    if (text.length < 256) {
+        // スペースしかなければ、空文字
+        text = text.trim() === "" ? "" : text;
+        
+        // URLの構築
+        const absoluteUrl = new URL(baseUrl);
+        const params = new URLSearchParams({ q: text });
+        absoluteUrl.search = params.toString();
+        
+        return {url: absoluteUrl.href};
+    }
     
-    // URLの構築
-    const absoluteUrl = new URL(baseUrl);
-    const params = new URLSearchParams({ q: text });
-    absoluteUrl.search = params.toString();
-    
-    return {url: absoluteUrl.href};
+    isFirstParamOnlyWindow = false;
+    return {url: baseUrl};
 }
 
-// 最初のAI会話においては、キー送信処理などは不要。(Grokは１発目の質問だけはURL処理できるため)
+// 最初のAI会話においては、キー送信処理などは不要。(１発目の質問だけはURL処理できるため)
+// ただし、文字数が多いと無理
 function firstQuestionOnlyOpenWindow() {
-    return true;
+    if (isFirstParamOnlyWindow) {
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 function useInputTransfer() {
