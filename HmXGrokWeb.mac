@@ -69,6 +69,14 @@ function useInputTransfer() {
     return true;
 }
 
+function onPrevKeySendDecorator() {
+    try {
+        browserpanecommand({target:"_each", focusinputfield:'textarea[aria-label="Grokに何でも聞いてください"]'});
+    } catch(e) {
+    }
+}
+
+
 doMain();
 
 } // js
