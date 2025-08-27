@@ -1,8 +1,19 @@
-// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.5
+// HmConvAIWeb.js 共通ライブラリ。 v 1.1.1.8
 // 全「Hm*****Web」シリーズで共通。
 
 // このdllのソースも全「Hm****Web」シリーズで共通であるが、ファイル名とGUIDだけ違う。
 var com = createobject(`${currentMacroDirectory}\\${renderPaneTargetName}.dll`, `${renderPaneTargetName}.${renderPaneTargetName}`);
+
+function isVersionAtLeast(v1, v2) {
+    // "Major,Minor,Build" 形式を数値配列に変換
+    const [major1, minor1, build1] = v1.split(',').map(Number);
+    const [major2, minor2, build2] = v2.split(',').map(Number);
+
+    const n1 = major1 * 10000 + minor1 * 100 + build1;
+    const n2 = major2 * 10000 + minor2 * 100 + build2;
+
+    return n1 >= n2;
+}
 
 // エラーメッセージ用
 function outputAlert(msg) {
