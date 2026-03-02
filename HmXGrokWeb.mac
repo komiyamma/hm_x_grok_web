@@ -1,5 +1,5 @@
 ﻿/*
- * HmXGrokWeb v 2.0.0.1
+ * HmXGrokWeb v 2.0.0.2
  *
  * Copyright (c) 2025 Akitsugu Komiyama
  * under the MIT License
@@ -72,7 +72,7 @@ function useInputTransfer() {
 if (isVersionAtLeast(hidemaruversion(), "9.50.04")) {
     function onPrevKeySendDecorator() {
         try {
-            browserpanecommand({target:"_each", focusinputfield:'textarea[aria-label="Grokに何でも聞いてください"]'});
+            browserpanecommand({target:"_each", focusinputfield:'.tiptap'});
         } catch(e) {
         }
     }
