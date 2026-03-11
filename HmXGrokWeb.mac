@@ -1,12 +1,12 @@
 ﻿/*
- * HmXGrokWeb v 2.0.0.2
+ * HmXGrokWeb v 2.0.2.1
  *
- * Copyright (c) 2025 Akitsugu Komiyama
+ * Copyright (c) 2025-2026 Akitsugu Komiyama
  * under the MIT License
  */
 
 
-hidemaruversion "9.39.99";
+hidemaruversion "9.50.04";
 
 setcompatiblemode 0x08000000;
 
@@ -41,15 +41,15 @@ function firstParamDecorator(baseUrl, text) {
     if (text.length < 256) {
         // スペースしかなければ、空文字
         text = text.trim() === "" ? "" : text;
-        
+
         // URLの構築
         const absoluteUrl = new URL(baseUrl);
         const params = new URLSearchParams({ q: text });
         absoluteUrl.search = params.toString();
-        
+
         return {url: absoluteUrl.href};
     }
-    
+
     isFirstParamOnlyWindow = false;
     return {url: baseUrl};
 }
@@ -65,16 +65,10 @@ function firstQuestionOnlyOpenWindow() {
     }
 }
 
-function useInputTransfer() {
-    return true;
-}
-
-if (isVersionAtLeast(hidemaruversion(), "9.50.04")) {
-    function onPrevKeySendDecorator() {
-        try {
-            browserpanecommand({target:"_each", focusinputfield:'.tiptap'});
-        } catch(e) {
-        }
+function onPrevKeySendDecorator() {
+    try {
+        browserpanecommand({target:"_each", focusinputfield:'.tiptap'});
+    } catch(e) {
     }
 }
 
